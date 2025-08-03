@@ -1,4 +1,5 @@
-# Multilingual RAG Document Processing System https://multilang-rag-system-cnzt.vercel.app/translation-test.html
+[🧪 Try the Translation Demo](https://multilang-rag-system-cnzt.vercel.app/translation-test.html)
+# Multilingual RAG Document Processing System 
 
 A production-ready web application that processes documents, provides intelligent translation with caching, and generates downloadable files in multiple formats. Built with Next.js 14, MongoDB, and robust fallback mechanisms for reliable document processing.
 
