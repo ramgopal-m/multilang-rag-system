@@ -1,0 +1,31 @@
+This is a comprehensive test document for demonstrating the multilingual RAG system capabilities.
+
+The system provides the following key features:
+
+1. Document Upload and Processing
+   - Automatic language detection
+   - Text chunking for optimal processing
+   - Vector embedding generation using AI models
+   - Storage in MongoDB with metadata
+
+2. Multilingual Translation
+   - Support for 10+ languages including Spanish, French, German, Italian, Portuguese
+   - Helsinki-NLP and mBART model integration
+   - Fallback translation systems for reliability
+   - Multiple output formats (TXT, Markdown, JSON)
+
+3. Intelligent Query Processing
+   - Semantic search across document chunks
+   - Context-aware response generation
+   - Real-time translation of responses to user's preferred language
+   - Source attribution with similarity scores
+
+4. Advanced Features
+   - Robust fallback systems when AI APIs are unavailable
+   - Custom embedding generation using mathematical text analysis
+   - Cross-language document search and retrieval
+   - Comprehensive error handling and logging
+
+This document will be used to test the complete translation workflow, including upload, processing, translation to multiple languages, and download capabilities.
+
+The system enables users to work with documents in any language while receiving responses in their preferred language, making it truly multilingual and globally accessible.

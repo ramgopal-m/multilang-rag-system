@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multilang RAG System - Translation Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+        
+        .section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input[type="file"], input[type="text"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="file"]:focus, input[type="text"]:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .loading {
+            color: #667eea;
+            font-style: italic;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background: white;
+            border-left: 5px solid #667eea;
+        }
+        
+        .success {
+            border-left-color: #4caf50;
+            background: #f8fff8;
+        }
+        
+        .error {
+            border-left-color: #f44336;
+            background: #fff8f8;
+        }
+        
+        .query-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .example-query {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .example-query:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .example-text {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .example-desc {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .sources {
+            margin-top: 20px;
+        }
+        
+        .source-item {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .source-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .source-content {
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .lang-button {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .lang-button:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .lang-button.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .test-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .test-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .test-query {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        
+        .test-lang {
+            font-size: 14px;
+            color: #007bff;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 Translation Test Interface</h1>
+            <p>Test multilingual queries and response translation</p>
+        </div>
+        
+        <div class="content">
+            <!-- Upload Test Document -->
+            <div class="section">
+                <h2>📤 Upload Test Document</h2>
+                <p>Upload a document to test multilingual search and translation</p>
+                <div class="form-group">
+                    <label for="fileInput">Select File:</label>
+                    <input type="file" id="fileInput" accept=".txt,.md,.pdf">
+                </div>
+                <button onclick="uploadFile()">Upload Document</button>
+                <div id="uploadResult"></div>
+            </div>
+
+            <!-- Document Translation Section -->
+            <div class="section">
+                <h2>📄 Generate Translated Document</h2>
+                <p>After uploading a document, generate a translated version in your preferred language</p>
+                
+                <div class="form-group">
+                    <label for="documentSelect">Select Document:</label>
+                    <select id="documentSelect">
+                        <option value="">Select a document to translate...</option>
+                    </select>
+                    <button onclick="loadDocuments()">🔄 Refresh Document List</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>Target Language for Document:</label>
+                    <div class="language-grid">
+                        <div class="lang-button" onclick="selectDocLanguage('en')" data-doc-lang="en">🇺🇸 English</div>
+                        <div class="lang-button" onclick="selectDocLanguage('es')" data-doc-lang="es">🇪🇸 Spanish</div>
+                        <div class="lang-button" onclick="selectDocLanguage('fr')" data-doc-lang="fr">🇫🇷 French</div>
+                        <div class="lang-button" onclick="selectDocLanguage('de')" data-doc-lang="de">🇩🇪 German</div>
+                        <div class="lang-button" onclick="selectDocLanguage('it')" data-doc-lang="it">🇮🇹 Italian</div>
+                        <div class="lang-button" onclick="selectDocLanguage('pt')" data-doc-lang="pt">🇵🇹 Portuguese</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="formatSelect">Output Format:</label>
+                    <select id="formatSelect">
+                        <option value="txt">📄 Text File (.txt)</option>
+                        <option value="md">📝 Markdown (.md)</option>
+                        <option value="docx">📊 Word Document (.docx)</option>
+                        <option value="pdf">📋 PDF Document (.pdf)</option>
+                        <option value="json">🔧 JSON with Metadata (.json)</option>
+                    </select>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        💡 DOCX and PDF formats include professional formatting and metadata
+                    </small>
+                </div>
+                
+                <button onclick="translateDocument()">🌐 Generate Translated Document</button>
+                <div id="translateResult"></div>
+            </div>
+
+            <!-- Translation Test Suite -->
+            <div class="section">
+                <h2>🧪 Predefined Translation Tests</h2>
+                <p>Click any test case to run a query in different languages:</p>
+                
+                <div class="test-grid">
+                    <div class="test-card" onclick="runTest('What is the main topic?', 'en')">
+                        <div class="test-title">🇺🇸 English Query</div>
+                        <div class="test-query">"What is the main topic?"</div>
+                        <div class="test-lang">Response in English</div>
+                    </div>
+                    
+                    <div class="test-card" onclick="runTest('What is the main topic?', 'es')">
+                        <div class="test-title">🇪🇸 Spanish Response</div>
+                        <div class="test-query">"What is the main topic?"</div>
+                        <div class="test-lang">Response in Spanish</div>
+                    </div>
+                    
+                    <div class="test-card" onclick="runTest('What is the main topic?', 'fr')">
+                        <div class="test-title">🇫🇷 French Response</div>
+                        <div class="test-query">"What is the main topic?"</div>
+                        <div class="test-lang">Response in French</div>
+                    </div>
+                    
+                    <div class="test-card" onclick="runTest('Summarize the key points', 'de')">
+                        <div class="test-title">🇩🇪 German Response</div>
+                        <div class="test-query">"Summarize the key points"</div>
+                        <div class="test-lang">Response in German</div>
+                    </div>
+                    
+                    <div class="test-card" onclick="runTest('What are the conclusions?', 'it')">
+                        <div class="test-title">🇮🇹 Italian Response</div>
+                        <div class="test-query">"What are the conclusions?"</div>
+                        <div class="test-lang">Response in Italian</div>
+                    </div>
+                    
+                    <div class="test-card" onclick="runTest('Explain the methodology', 'pt')">
+                        <div class="test-title">🇵🇹 Portuguese Response</div>
+                        <div class="test-query">"Explain the methodology"</div>
+                        <div class="test-lang">Response in Portuguese</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Query Section -->
+            <div class="section">
+                <h2>🔍 Custom Query Test</h2>
+                
+                <div class="form-group">
+                    <label for="queryInput">Your Question:</label>
+                    <textarea id="queryInput" placeholder="Enter your question here..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Select Response Language:</label>
+                    <div class="language-grid">
+                        <div class="lang-button" onclick="selectLanguage('en')" data-lang="en">🇺🇸 English</div>
+                        <div class="lang-button" onclick="selectLanguage('es')" data-lang="es">🇪🇸 Spanish</div>
+                        <div class="lang-button" onclick="selectLanguage('fr')" data-lang="fr">🇫🇷 French</div>
+                        <div class="lang-button" onclick="selectLanguage('de')" data-lang="de">🇩🇪 German</div>
+                        <div class="lang-button" onclick="selectLanguage('it')" data-lang="it">🇮🇹 Italian</div>
+                        <div class="lang-button" onclick="selectLanguage('pt')" data-lang="pt">🇵🇹 Portuguese</div>
+                        <div class="lang-button" onclick="selectLanguage('ru')" data-lang="ru">🇷🇺 Russian</div>
+                        <div class="lang-button" onclick="selectLanguage('zh')" data-lang="zh">🇨🇳 Chinese</div>
+                        <div class="lang-button" onclick="selectLanguage('ja')" data-lang="ja">🇯🇵 Japanese</div>
+                        <div class="lang-button" onclick="selectLanguage('ko')" data-lang="ko">🇰🇷 Korean</div>
+                    </div>
+                </div>
+                
+                <button onclick="queryDocuments()">🚀 Test Translation</button>
+                <button onclick="runAllLanguageTests()">🌍 Test All Languages</button>
+                
+                <div id="queryResult"></div>
+            </div>
+
+            <!-- Multiple Language Comparison -->
+            <div class="section">
+                <h2>🔄 Multi-Language Comparison</h2>
+                <p>Test the same query in multiple languages simultaneously:</p>
+                
+                <div class="query-examples">
+                    <div class="example-query" onclick="runMultiLanguageTest('What is this document about?')">
+                        <div class="example-text">Document Summary</div>
+                        <div class="example-desc">Test in EN, ES, FR</div>
+                    </div>
+                    <div class="example-query" onclick="runMultiLanguageTest('What are the key findings?')">
+                        <div class="example-text">Key Findings</div>
+                        <div class="example-desc">Test in DE, IT, PT</div>
+                    </div>
+                    <div class="example-query" onclick="runMultiLanguageTest('Summarize the main points')">
+                        <div class="example-text">Main Points</div>
+                        <div class="example-desc">Test in RU, ZH, JA</div>
+                    </div>
+                </div>
+                
+                <div id="multiLangResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedLanguage = 'en';
+        let selectedDocLanguage = 'es'; // Default to Spanish for document translation
+        
+        function selectLanguage(lang) {
+            selectedLanguage = lang;
+            // Update visual selection
+            document.querySelectorAll('.lang-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`[data-lang="${lang}"]`).classList.add('selected');
+        }
+        
+        function selectDocLanguage(lang) {
+            selectedDocLanguage = lang;
+            // Update visual selection for document translation
+            document.querySelectorAll('[data-doc-lang]').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`[data-doc-lang="${lang}"]`).classList.add('selected');
+        }
+        
+        // Initialize with English selected for queries, Spanish for documents
+        selectLanguage('en');
+        selectDocLanguage('es');
+
+        // Test function to verify API connectivity
+        async function testDocumentsAPI() {
+            console.log('🧪 Testing documents API...');
+            const translateResult = document.getElementById('translateResult');
+            
+            try {
+                translateResult.innerHTML = '<div class="loading">Testing API connection...</div>';
+                
+                const response = await fetch('/api/documents');
+                console.log('📡 Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('📋 API Response:', data);
+                
+                translateResult.innerHTML = `
+                    <div class="result success">
+                        <h4>✅ API Test Successful</h4>
+                        <p><strong>Status:</strong> ${response.status} OK</p>
+                        <p><strong>Documents Found:</strong> ${Array.isArray(data) ? data.length : 'Unknown'}</p>
+                        <p><strong>Response Type:</strong> ${Array.isArray(data) ? 'Array' : typeof data}</p>
+                        <button onclick="loadDocuments()">🔄 Load Documents Now</button>
+                    </div>
+                `;
+                
+                return data;
+            } catch (error) {
+                console.error('❌ API Test failed:', error);
+                
+                translateResult.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ API Test Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Please check the console for more details.</p>
+                        <button onclick="testDocumentsAPI()">🔄 Retry Test</button>
+                    </div>
+                `;
+                
+                return null;
+            }
+        }
+
+        async function loadDocuments() {
+            const documentSelect = document.getElementById('documentSelect');
+            const loadingOption = document.createElement('option');
+            loadingOption.value = '';
+            loadingOption.textContent = 'Loading documents...';
+            documentSelect.innerHTML = '';
+            documentSelect.appendChild(loadingOption);
+            
+            try {
+                const response = await fetch('/api/documents');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const documents = await response.json();
+                
+                documentSelect.innerHTML = '<option value="">Select a document to translate...</option>';
+                
+                if (Array.isArray(documents) && documents.length > 0) {
+                    // Group documents by title to avoid duplicates
+                    const uniqueDocs = {};
+                    documents.forEach(doc => {
+                        const key = `${doc.title}_${doc.language}`;
+                        if (!uniqueDocs[key] || uniqueDocs[key].uploadedAt < doc.uploadedAt) {
+                            uniqueDocs[key] = doc;
+                        }
+                    });
+                    
+                    Object.values(uniqueDocs).forEach(doc => {
+                        const option = document.createElement('option');
+                        option.value = doc.title;
+                        option.textContent = `${doc.title} (${doc.language}, ${doc.chunks} chunks)`;
+                        option.setAttribute('data-doc-id', doc._id);
+                        option.setAttribute('data-language', doc.language);
+                        documentSelect.appendChild(option);
+                    });
+                    
+                    console.log(`✅ Loaded ${Object.keys(uniqueDocs).length} unique documents`);
+                } else {
+                    const noDocsOption = document.createElement('option');
+                    noDocsOption.value = '';
+                    noDocsOption.textContent = 'No documents available - upload some first!';
+                    documentSelect.appendChild(noDocsOption);
+                }
+            } catch (error) {
+                console.error('❌ Failed to load documents:', error);
+                documentSelect.innerHTML = '<option value="">Error loading documents - check console</option>';
+                
+                // Show error in UI
+                const translateResult = document.getElementById('translateResult');
+                if (translateResult) {
+                    translateResult.innerHTML = `
+                        <div class="result error">
+                            <h4>❌ Failed to Load Documents</h4>
+                            <p><strong>Error:</strong> ${error.message}</p>
+                            <p>Make sure the server is running and try refreshing the page.</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        async function translateDocument() {
+            const documentSelect = document.getElementById('documentSelect');
+            const formatSelect = document.getElementById('formatSelect');
+            const translateResult = document.getElementById('translateResult');
+            
+            if (!documentSelect.value) {
+                alert('Please select a document to translate');
+                return;
+            }
+            
+            // Show immediate progress
+            translateResult.innerHTML = `
+                <div class="loading">
+                    🚀 Starting fast translation...
+                    <div style="margin-top: 15px;">
+                        <div style="background: #f0f0f0; border-radius: 10px; height: 20px; overflow: hidden;">
+                            <div id="progressBar" style="background: linear-gradient(90deg, #007bff, #28a745); 
+                                 height: 100%; width: 0%; transition: width 0.3s ease; border-radius: 10px;"></div>
+                        </div>
+                        <div id="progressText" style="text-align: center; margin-top: 10px; color: #666;">
+                            Preparing translation...
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            // Simulate progress for better UX
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + '%';
+                
+                if (progress < 30) {
+                    progressText.textContent = '⚡ Processing document chunks...';
+                } else if (progress < 60) {
+                    progressText.textContent = '🔄 Translating content in parallel...';
+                } else if (progress < 90) {
+                    progressText.textContent = '📄 Generating formatted document...';
+                }
+            }, 200);
+            
+            try {
+                const response = await fetch('/api/documents/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        documentId: documentSelect.value,
+                        targetLanguage: selectedDocLanguage,
+                        format: formatSelect.value
+                    })
+                });
+                
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                progressText.textContent = '✅ Translation completed!';
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const languages = {
+                        'en': '🇺🇸 English',
+                        'es': '🇪🇸 Spanish',
+                        'fr': '🇫🇷 French',
+                        'de': '🇩🇪 German',
+                        'it': '🇮🇹 Italian',
+                        'pt': '🇵🇹 Portuguese'
+                    };
+                    
+                    const formatIcons = {
+                        'txt': '📄',
+                        'md': '📝', 
+                        'docx': '📊',
+                        'pdf': '📋',
+                        'json': '🔧'
+                    };
+                    
+                    const formatNames = {
+                        'txt': 'Text File',
+                        'md': 'Markdown',
+                        'docx': 'Word Document', 
+                        'pdf': 'PDF Document',
+                        'json': 'JSON with Metadata'
+                    };
+                    
+                    translateResult.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Document Translation Completed</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                    <strong>Original:</strong><br>
+                                    ${data.originalDocument}<br>
+                                    <small>${languages[data.originalLanguage] || data.originalLanguage}</small>
+                                </div>
+                                <div style="background: #e8f5e8; padding: 15px; border-radius: 8px;">
+                                    <strong>Translated:</strong><br>
+                                    ${data.translatedFileName}<br>
+                                    <small>${languages[data.targetLanguage] || data.targetLanguage}</small>
+                                </div>
+                                <div style="background: #e8f4f8; padding: 15px; border-radius: 8px;">
+                                    <strong>Format:</strong><br>
+                                    ${formatIcons[data.format] || '📄'} ${formatNames[data.format] || data.format.toUpperCase()}<br>
+                                    <small>${data.chunks} chunks, ${data.contentLength} chars</small>
+                                </div>
+                            </div>
+                            
+                            <div style="margin: 20px 0; padding: 20px; background: #f0f8ff; border-radius: 8px; border-left: 5px solid #007bff;">
+                                <h4>📁 Download Translated Document</h4>
+                                <p>Your document has been translated to <strong>${data.languageName}</strong> in <strong>${formatNames[data.format] || data.format}</strong> format</p>
+                                
+                                ${data.isBinary ? `
+                                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107;">
+                                        <p><strong>📋 ${formatNames[data.format] || data.format.toUpperCase()} Format</strong></p>
+                                        <p>This document includes professional formatting, styling, and metadata. Perfect for sharing and printing!</p>
+                                    </div>
+                                    
+                                    <button onclick="downloadBinaryFile('${data.downloadUrl}', '${data.translatedFileName}')" 
+                                            style="display: inline-block; background: #007bff; color: white; padding: 12px 24px; 
+                                                   border: none; border-radius: 8px; font-weight: 600; margin: 10px 10px 10px 0; cursor: pointer;">
+                                        📥 Download ${data.translatedFileName}
+                                    </button>
+                                ` : `
+                                    <a href="${data.downloadUrl}" 
+                                       download="${data.translatedFileName}"
+                                       style="display: inline-block; background: #007bff; color: white; padding: 12px 24px; 
+                                              text-decoration: none; border-radius: 8px; font-weight: 600; margin: 10px 10px 10px 0;">
+                                        📥 Download ${data.translatedFileName}
+                                    </a>
+                                `}
+                                
+                                ${!data.isBinary ? `
+                                    <button onclick="previewTranslationContent(this)" 
+                                            data-content="${(data.content || '').substring(0, 500).replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '\\n').replace(/\r/g, '')}..."
+                                            style="background: #28a745; margin: 0; border: none; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        👁️ Preview Content
+                                    </button>
+                                ` : `
+                                    <button onclick="showFormatInfo('${data.format}')" 
+                                            style="background: #17a2b8; margin: 0;">
+                                        ℹ️ Format Info
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    translateResult.innerHTML = `<div class="result error">❌ ${data.error}</div>`;
+                }
+            } catch (error) {
+                translateResult.innerHTML = `<div class="result error">❌ Translation failed: ${error.message}</div>`;
+            }
+        }
+        
+        function previewTranslationContent(button) {
+            const content = button.getAttribute('data-content');
+            previewTranslation(content);
+        }
+
+        function previewTranslation(content) {
+            const preview = document.createElement('div');
+            preview.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: white; border: 2px solid #ddd; border-radius: 12px; 
+                padding: 30px; max-width: 80%; max-height: 80%; overflow: auto;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000;
+            `;
+            
+            preview.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>📄 Translation Preview</h3>
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="background: #dc3545; color: white; border: none; padding: 8px 12px; 
+                                   border-radius: 4px; cursor: pointer;">✕ Close</button>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; 
+                           font-family: monospace; line-height: 1.6; white-space: pre-wrap;">
+                    ${content}
+                </div>
+            `;
+            
+            document.body.appendChild(preview);
+            
+            // Add backdrop
+            const backdrop = document.createElement('div');
+            backdrop.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); z-index: 999;
+            `;
+            backdrop.onclick = () => {
+                backdrop.remove();
+                preview.remove();
+            };
+            document.body.appendChild(backdrop);
+        }
+        
+        function showFormatInfo(format) {
+            const formatInfo = {
+                'docx': {
+                    icon: '📊',
+                    name: 'Word Document',
+                    description: 'Professional Microsoft Word document with rich formatting, headers, and metadata.',
+                    features: ['Rich text formatting', 'Document metadata', 'Professional layout', 'Compatible with MS Word']
+                },
+                'pdf': {
+                    icon: '📋', 
+                    name: 'PDF Document',
+                    description: 'Portable Document Format with consistent formatting across all devices and platforms.',
+                    features: ['Universal compatibility', 'Print-ready format', 'Styled layout', 'Embedded metadata']
+                }
+            };
+            
+            const info = formatInfo[format] || {
+                icon: '📄',
+                name: format.toUpperCase(),
+                description: 'Document format',
+                features: ['Text content']
+            };
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: white; border: 2px solid #ddd; border-radius: 12px; 
+                padding: 30px; max-width: 500px; width: 90%;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>${info.icon} ${info.name} Format</h3>
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="background: #dc3545; color: white; border: none; padding: 8px 12px; 
+                                   border-radius: 4px; cursor: pointer;">✕ Close</button>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <p style="color: #666; line-height: 1.6;">${info.description}</p>
+                </div>
+                
+                <div>
+                    <h4 style="margin-bottom: 10px; color: #333;">Features:</h4>
+                    <ul style="margin: 0; padding-left: 20px; color: #555;">
+                        ${info.features.map(feature => `<li>${feature}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 8px;">
+                    <p style="margin: 0; color: #155724;">
+                        <strong>✅ Ready to download!</strong> Click the download button to get your professionally formatted document.
+                    </p>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Add backdrop
+            const backdrop = document.createElement('div');
+            backdrop.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); z-index: 999;
+            `;
+            backdrop.onclick = () => {
+                backdrop.remove();
+                modal.remove();
+            };
+            document.body.appendChild(backdrop);
+        }
+        
+        async function downloadBinaryFile(url, filename) {
+            try {
+                console.log('🔽 Starting binary download:', url);
+                
+                // Show download progress
+                const downloadStatus = document.createElement('div');
+                downloadStatus.style.cssText = `
+                    position: fixed; bottom: 20px; right: 20px; 
+                    background: #007bff; color: white; padding: 15px 20px; 
+                    border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+                    z-index: 1000; font-weight: 600;
+                `;
+                downloadStatus.innerHTML = '📥 Downloading file...';
+                document.body.appendChild(downloadStatus);
+                
+                // Fetch the binary data
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+                }
+                
+                downloadStatus.innerHTML = '📄 Processing document...';
+                
+                // Get the blob data
+                const blob = await response.blob();
+                
+                // Create download link
+                const downloadLink = document.createElement('a');
+                const objectUrl = URL.createObjectURL(blob);
+                
+                downloadLink.href = objectUrl;
+                downloadLink.download = filename;
+                downloadLink.style.display = 'none';
+                
+                // Trigger download
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                // Clean up object URL
+                URL.revokeObjectURL(objectUrl);
+                
+                downloadStatus.innerHTML = '✅ Download completed!';
+                downloadStatus.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    document.body.removeChild(downloadStatus);
+                }, 3000);
+                
+                console.log('✅ Binary download completed:', filename);
+                
+            } catch (error) {
+                console.error('❌ Download failed:', error);
+                
+                const errorStatus = document.createElement('div');
+                errorStatus.style.cssText = `
+                    position: fixed; bottom: 20px; right: 20px; 
+                    background: #dc3545; color: white; padding: 15px 20px; 
+                    border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+                    z-index: 1000; font-weight: 600;
+                `;
+                errorStatus.innerHTML = `❌ Download failed: ${error.message}`;
+                document.body.appendChild(errorStatus);
+                
+                setTimeout(() => {
+                    document.body.removeChild(errorStatus);
+                }, 5000);
+            }
+        }
+
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadResult = document.getElementById('uploadResult');
+            
+            if (!fileInput.files[0]) {
+                alert('Please select a file');
+                return;
+            }
+            
+            uploadResult.innerHTML = '<div class="loading">Uploading and processing document...</div>';
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            
+            try {
+                const response = await fetch('/api/documents/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    uploadResult.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Upload Successful</h3>
+                            <p><strong>Document ID:</strong> ${data.documentId}</p>
+                            <p><strong>Language:</strong> ${data.language}</p>
+                            <p><strong>Chunks:</strong> ${data.chunks}</p>
+                            <p><strong>Method:</strong> ${data.embeddingMethod}</p>
+                            <div style="margin-top: 15px; padding: 15px; background: #e8f5e8; border-radius: 8px;">
+                                <p><strong>💡 Next Step:</strong> Your document is now ready for translation! 
+                                   Use the "Generate Translated Document" section below to create a translated version.</p>
+                            </div>
+                        </div>
+                    `;
+                    // Auto-refresh document list after successful upload
+                    setTimeout(loadDocuments, 1000);
+                } else {
+                    uploadResult.innerHTML = `<div class="result error">❌ ${data.error}</div>`;
+                }
+            } catch (error) {
+                uploadResult.innerHTML = `<div class="result error">❌ Upload failed: ${error.message}</div>`;
+            }
+        }
+
+        async function runTest(query, targetLang) {
+            const result = await performQuery(query, targetLang);
+            
+            const languages = {
+                'en': '🇺🇸 English',
+                'es': '🇪🇸 Spanish',
+                'fr': '🇫🇷 French',
+                'de': '🇩🇪 German',
+                'it': '🇮🇹 Italian',
+                'pt': '🇵🇹 Portuguese',
+                'ru': '🇷🇺 Russian',
+                'zh': '🇨🇳 Chinese',
+                'ja': '🇯🇵 Japanese',
+                'ko': '🇰🇷 Korean'
+            };
+            
+            document.getElementById('queryResult').innerHTML = `
+                <div class="result success">
+                    <h3>🧪 Test Result: ${languages[targetLang]}</h3>
+                    <p><strong>Query:</strong> "${query}"</p>
+                    <p><strong>Target Language:</strong> ${languages[targetLang]}</p>
+                    <div style="margin-top: 20px; padding: 20px; background: #f0f8ff; border-radius: 8px; border-left: 5px solid #007bff;">
+                        <h4>💬 Answer:</h4>
+                        <p style="line-height: 1.6; color: #333;">${result}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function queryDocuments() {
+            const queryInput = document.getElementById('queryInput');
+            
+            if (!queryInput.value.trim()) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            const result = await performQuery(queryInput.value.trim(), selectedLanguage);
+            
+            const languages = {
+                'en': '🇺🇸 English',
+                'es': '🇪🇸 Spanish',
+                'fr': '🇫🇷 French',
+                'de': '🇩🇪 German',
+                'it': '🇮🇹 Italian',
+                'pt': '🇵🇹 Portuguese',
+                'ru': '🇷🇺 Russian',
+                'zh': '🇨🇳 Chinese',
+                'ja': '🇯🇵 Japanese',
+                'ko': '🇰🇷 Korean'
+            };
+            
+            document.getElementById('queryResult').innerHTML = `
+                <div class="result success">
+                    <h3>🎯 Custom Query Result</h3>
+                    <p><strong>Query:</strong> "${queryInput.value}"</p>
+                    <p><strong>Target Language:</strong> ${languages[selectedLanguage]}</p>
+                    <div style="margin-top: 20px; padding: 20px; background: #f0f8ff; border-radius: 8px; border-left: 5px solid #007bff;">
+                        <h4>💬 Answer:</h4>
+                        <p style="line-height: 1.6; color: #333;">${result}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function runAllLanguageTests() {
+            const queryInput = document.getElementById('queryInput');
+            
+            if (!queryInput.value.trim()) {
+                alert('Please enter a question first');
+                return;
+            }
+            
+            const languages = ['en', 'es', 'fr', 'de', 'it'];
+            const query = queryInput.value.trim();
+            
+            document.getElementById('queryResult').innerHTML = '<div class="loading">Testing in multiple languages...</div>';
+            
+            let results = '<div class="result success"><h3>🌍 Multi-Language Test Results</h3>';
+            
+            for (const lang of languages) {
+                try {
+                    const answer = await performQuery(query, lang);
+                    const langNames = {
+                        'en': '🇺🇸 English',
+                        'es': '🇪🇸 Spanish', 
+                        'fr': '🇫🇷 French',
+                        'de': '🇩🇪 German',
+                        'it': '🇮🇹 Italian'
+                    };
+                    
+                    results += `
+                        <div style="margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+                            <h4>${langNames[lang]}</h4>
+                            <p style="color: #666; font-style: italic;">"${query}"</p>
+                            <p style="line-height: 1.6;">${answer}</p>
+                        </div>
+                    `;
+                } catch (error) {
+                    results += `
+                        <div style="margin: 15px 0; padding: 15px; border: 1px solid #f44336; border-radius: 8px; background: #fff8f8;">
+                            <h4>${lang.toUpperCase()} - Error</h4>
+                            <p style="color: #721c24;">Failed to get response</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            results += '</div>';
+            document.getElementById('queryResult').innerHTML = results;
+        }
+
+        async function runMultiLanguageTest(query) {
+            const testGroups = {
+                'What is this document about?': ['en', 'es', 'fr'],
+                'What are the key findings?': ['de', 'it', 'pt'],
+                'Summarize the main points': ['ru', 'zh', 'ja']
+            };
+            
+            const languages = testGroups[query] || ['en', 'es', 'fr'];
+            
+            document.getElementById('multiLangResult').innerHTML = '<div class="loading">Running multi-language comparison...</div>';
+            
+            let results = '<div class="result success"><h3>🔄 Multi-Language Comparison</h3>';
+            results += `<p><strong>Query:</strong> "${query}"</p>`;
+            
+            for (const lang of languages) {
+                try {
+                    const answer = await performQuery(query, lang);
+                    const langNames = {
+                        'en': '🇺🇸 English', 'es': '🇪🇸 Spanish', 'fr': '🇫🇷 French',
+                        'de': '🇩🇪 German', 'it': '🇮🇹 Italian', 'pt': '🇵🇹 Portuguese',
+                        'ru': '🇷🇺 Russian', 'zh': '🇨🇳 Chinese', 'ja': '🇯🇵 Japanese'
+                    };
+                    
+                    results += `
+                        <div style="margin: 15px 0; padding: 15px; border-left: 4px solid #667eea; background: #f8f9ff; border-radius: 8px;">
+                            <h4>${langNames[lang]}</h4>
+                            <p style="line-height: 1.6;">${answer}</p>
+                        </div>
+                    `;
+                } catch (error) {
+                    results += `
+                        <div style="margin: 15px 0; padding: 15px; border-left: 4px solid #f44336; background: #fff8f8; border-radius: 8px;">
+                            <h4>${lang.toUpperCase()} - Error</h4>
+                            <p style="color: #721c24;">Failed to get response</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            results += '</div>';
+            document.getElementById('multiLangResult').innerHTML = results;
+        }
+
+        async function performQuery(query, targetLanguage) {
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        targetLanguage: targetLanguage
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    return data.answer;
+                } else {
+                    return `Error: ${data.error}`;
+                }
+            } catch (error) {
+                return `Error: ${error.message}`;
+            }
+        }
+
+        // Initialize page
+        window.onload = async function() {
+            console.log('🚀 Page loaded, initializing...');
+            
+            // Test API first
+            const apiTest = await testDocumentsAPI();
+            if (apiTest) {
+                console.log('✅ API test successful, loading documents...');
+                await loadDocuments();
+            } else {
+                console.log('❌ API test failed, showing error message...');
+                const translateResult = document.getElementById('translateResult');
+                if (translateResult) {
+                    translateResult.innerHTML = `
+                        <div class="result error">
+                            <h4>❌ Connection Error</h4>
+                            <p>Unable to connect to the documents API. Please check:</p>
+                            <ul>
+                                <li>Development server is running (npm run dev)</li>
+                                <li>Server is accessible at localhost:3000</li>
+                                <li>No firewall blocking the connection</li>
+                            </ul>
+                            <button onclick="window.location.reload()">🔄 Retry</button>
+                        </div>
+                    `;
+                }
+            }
+        };
+    </script>
+</body>
+</html>

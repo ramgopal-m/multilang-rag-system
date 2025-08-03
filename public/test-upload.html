@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multilang RAG - Document Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .upload-form {
+            border: 2px dashed #ddd;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .upload-form.dragover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+        select, button {
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .document-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Multilang RAG System</h1>
+        <p>Upload documents to test the multilingual RAG system with MongoDB storage.</p>
+        
+        <div class="upload-form" id="uploadForm">
+            <h3>📁 Upload Document</h3>
+            <input type="file" id="fileInput" accept=".txt,.md,.json" />
+            <br>
+            <label for="languageSelect">Language (optional):</label>
+            <select id="languageSelect">
+                <option value="">Auto-detect</option>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="zh">Chinese</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+                <option value="ru">Russian</option>
+            </select>
+            <br>
+            <button onclick="uploadFile()" id="uploadBtn">Upload & Process</button>
+            <button onclick="checkStatus()" id="statusBtn">Check Database Status</button>
+            <button onclick="listDocuments()" id="listBtn">List Documents</button>
+        </div>
+        
+        <div id="statusDiv" class="status"></div>
+        
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusDiv');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+        }
+        
+        function hideStatus() {
+            document.getElementById('statusDiv').style.display = 'none';
+        }
+        
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const languageSelect = document.getElementById('languageSelect');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            if (!fileInput.files[0]) {
+                showStatus('Please select a file to upload.', 'error');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const language = languageSelect.value;
+            
+            showStatus('🔄 Uploading and processing file...', 'info');
+            uploadBtn.disabled = true;
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                if (language) {
+                    formData.append('language', language);
+                }
+                
+                const response = await fetch(`${API_BASE}/documents/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus(`✅ Upload successful! Language: ${result.language}, Chunks: ${result.chunks}`, 'success');
+                    displayResults('Upload Result', result);
+                    
+                    // Auto-refresh document list
+                    setTimeout(listDocuments, 1000);
+                } else {
+                    showStatus(`❌ Upload failed: ${result.error}`, 'error');
+                    console.error('Upload error:', result);
+                }
+            } catch (error) {
+                showStatus(`❌ Upload failed: ${error.message}`, 'error');
+                console.error('Upload error:', error);
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        }
+        
+        async function checkStatus() {
+            showStatus('🔍 Checking database status...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/database/status`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('✅ Database status retrieved successfully!', 'success');
+                    displayResults('Database Status', result);
+                } else {
+                    showStatus(`❌ Failed to get database status: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Failed to get database status: ${error.message}`, 'error');
+            }
+        }
+        
+        async function listDocuments() {
+            showStatus('📋 Loading documents...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/documents`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    if (Array.isArray(result) && result.length > 0) {
+                        showStatus(`✅ Found ${result.length} documents!`, 'success');
+                        displayDocuments(result);
+                    } else {
+                        showStatus('ℹ️ No documents found in database.', 'info');
+                        displayResults('Documents', []);
+                    }
+                } else {
+                    showStatus(`❌ Failed to load documents: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Failed to load documents: ${error.message}`, 'error');
+            }
+        }
+        
+        function displayResults(title, data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+        
+        function displayDocuments(documents) {
+            const resultsDiv = document.getElementById('results');
+            let html = '<h3>📚 Uploaded Documents</h3>';
+            
+            documents.forEach(doc => {
+                html += `
+                    <div class="document-item">
+                        <h4>📄 ${doc.title}</h4>
+                        <p><strong>Language:</strong> ${doc.language}</p>
+                        <p><strong>Chunks:</strong> ${doc.chunks}</p>
+                        <p><strong>File Size:</strong> ${doc.fileSize} bytes</p>
+                        <p><strong>Uploaded:</strong> ${new Date(doc.uploadedAt).toLocaleString()}</p>
+                        ${doc.status ? `<p><strong>Status:</strong> ${doc.status}</p>` : ''}
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Drag and drop functionality
+        const uploadForm = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        
+        uploadForm.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadForm.classList.add('dragover');
+        });
+        
+        uploadForm.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadForm.classList.remove('dragover');
+        });
+        
+        uploadForm.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadForm.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                showStatus(`📁 File selected: ${files[0].name}`, 'info');
+            }
+        });
+        
+        // Auto-load status on page load
+        window.addEventListener('load', () => {
+            checkStatus();
+        });
+    </script>
+</body>
+</html>
